@@ -1,2 +1,2 @@
-# spectrum_tmp
-Code for Reproduction of Spectrum (Manuscript under Submission)
+# Spectrum
+Please refer to `README.md` in the main branch.
