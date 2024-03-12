@@ -357,11 +357,11 @@ void SpectrumExecutor::Run() {while (!stop_flag.load()) {
             statistics.JournalCommit(latency);
             break;
         }
-        else {
-            // if cannot commit, then do something else
-            queue.Push(std::move(tx));
-            break;
-        }
+        // else {
+        //     // if cannot commit, then do something else
+        //     queue.Push(std::move(tx));
+        //     break;
+        // }
     }
 }}
 
