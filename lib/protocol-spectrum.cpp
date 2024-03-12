@@ -328,13 +328,13 @@ void SpectrumExecutor::Run() {while (!stop_flag.load()) {
         LOG(WARNING) << "queue is empty, performance may deteriorate. ";
         continue;
     }
-    if (last_finalized.load() < tx->should_wait) {
-        DLOG(INFO) << "requeue " << tx->id;
-        queue.Push(std::move(tx));
-        continue;
-    }
     while (true) {
-        if (tx->HasRerunKeys()) {
+        if (last_finalized.load() < tx->should_wait) {
+            DLOG(INFO) << "requeue " << tx->id;
+            queue.Push(std::move(tx));
+            break;
+        }
+        else if (tx->HasRerunKeys()) {
             // sweep all operations from previous execution
             ReExecute(tx.get());
             if (tx->HasRerunKeys()) { continue; }
@@ -357,11 +357,6 @@ void SpectrumExecutor::Run() {while (!stop_flag.load()) {
             statistics.JournalCommit(latency);
             break;
         }
-        // else {
-        //     // if cannot commit, then do something else
-        //     queue.Push(std::move(tx));
-        //     break;
-        // }
     }
 }}
 
