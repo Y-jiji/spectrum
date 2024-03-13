@@ -265,7 +265,6 @@ SpectrumExecutor::SpectrumExecutor(Spectrum& spectrum):
     last_execute{spectrum.last_execute},
     stop_flag{spectrum.stop_flag},
     statistics{spectrum.statistics},
-    queue{spectrum.queue},
     queue_amplification{spectrum.queue_amplification}
 {
     workload.SetEVMType(spectrum.evm_type);
@@ -377,8 +376,7 @@ void SpectrumExecutor::ReExecute(SpectrumTransaction* tx) {
 /// @brief start an executor
 void SpectrumExecutor::Run() {while (!stop_flag.load()) {
     auto tx = Create();
-    while (!stop_flag.load()) {
-        DLOG(INFO) << "loop " << tx->id << std::endl;
+    while (true) {
         if (tx->HasRerunKeys()) {
             // sweep all operations from previous execution
             DLOG(INFO) << "re-execute " << tx->id;
