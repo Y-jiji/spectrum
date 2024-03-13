@@ -57,7 +57,6 @@ struct SpectrumEntry {
 };
 
 struct SpectrumVersionList {
-    std::mutex  mu;
     T*          tx = nullptr;
     std::list<SpectrumEntry> entries;
     // readers that read default value

@@ -57,7 +57,6 @@ SpectrumTable::SpectrumTable(size_t partitions):
 /// @param version (mutated to be) the version of read entry
 void SpectrumTable::Get(T* tx, const K& k, evmc::bytes32& v, size_t& version) {
     Table::Put(k, [&](V& _v) {
-        auto guard = std::lock_guard{_v.mu};
         auto rit = _v.entries.rbegin();
         auto end = _v.entries.rend();
         while (rit != end) {
@@ -84,7 +83,6 @@ void SpectrumTable::Put(T* tx, const K& k, const evmc::bytes32& v) {
     CHECK(tx->id > 0) << "we reserve version(0) for default value";
     DLOG(INFO) << tx->id << "(" << tx << ")" << " write " << KeyHasher()(k) << std::endl;
     Table::Put(k, [&](V& _v) {
-        auto guard = std::lock_guard{_v.mu};
         auto rit = _v.entries.rbegin();
         auto end = _v.entries.rend();
         // search from insertion position
@@ -127,7 +125,6 @@ void SpectrumTable::Put(T* tx, const K& k, const evmc::bytes32& v) {
 void SpectrumTable::RegretGet(T* tx, const K& k, size_t version) {
     DLOG(INFO) << "remove read record " << tx->id << "(" << tx << ")" << " from " << KeyHasher()(k) << std::endl;
     Table::Put(k, [&](V& _v) {
-        auto guard = std::lock_guard{_v.mu};
         auto vit = _v.entries.begin();
         auto end = _v.entries.end();
         while (vit != end) {
@@ -140,6 +137,17 @@ void SpectrumTable::RegretGet(T* tx, const K& k, size_t version) {
         if (version == 0) {
             _v.readers_default.erase(tx);
         }
+        #if !defined(NDEBUG)
+        {
+            auto end = _v.entries.end();
+            for (auto vit = _v.entries.begin(); vit != end; ++vit) {
+                DLOG(INFO) << "spot version " << vit->version << std::endl;
+                if (vit->readers.contains(tx)) {
+                    DLOG(ERROR) << "didn't remove " << tx->id << "(" << tx << ")" << " still on version " << vit->version  << std::endl;
+                }
+            }
+        }
+        #endif
     });
 }
 
@@ -149,7 +157,6 @@ void SpectrumTable::RegretGet(T* tx, const K& k, size_t version) {
 void SpectrumTable::RegretPut(T* tx, const K& k) {
     DLOG(INFO) << "remove write record " << tx->id << "(" << tx << ")" << " from " << KeyHasher()(k) << std::endl;
     Table::Put(k, [&](V& _v) {
-        auto guard = std::lock_guard{_v.mu};
         auto vit = _v.entries.begin();
         auto end = _v.entries.end();
         while (vit != end) {
@@ -174,7 +181,6 @@ void SpectrumTable::RegretPut(T* tx, const K& k) {
 void SpectrumTable::ClearGet(T* tx, const K& k, size_t version) {
     DLOG(INFO) << "remove read record " << tx->id << "(" << tx << ")" << " from " << KeyHasher()(k) << std::endl;
     Table::Put(k, [&](V& _v) {
-        auto guard = std::lock_guard{_v.mu};
         auto vit = _v.entries.begin();
         auto end = _v.entries.end();
         while (vit != end) {
@@ -209,7 +215,6 @@ void SpectrumTable::ClearGet(T* tx, const K& k, size_t version) {
 void SpectrumTable::ClearPut(T* tx, const K& k) {
     DLOG(INFO) << "remove write record before " << tx->id << "(" << tx << ")" << " from " << KeyHasher()(k) << std::endl;
     Table::Put(k, [&](V& _v) {
-        auto guard = std::lock_guard{_v.mu};
         while (_v.entries.size() && _v.entries.front().version < tx->id) {
             _v.entries.pop_front();
         }
@@ -269,11 +274,13 @@ SpectrumExecutor::SpectrumExecutor(Spectrum& spectrum):
 /// @brief generate a transaction and execute it
 std::unique_ptr<T> SpectrumExecutor::Create() {
     auto tx = std::make_unique<T>(workload.Next(), last_execute.fetch_add(1));
-    tx->UpdateSetStorageHandler([&tx](
+    auto tx_ref = tx.get();
+    tx->UpdateSetStorageHandler([tx_ref](
         const evmc::address &addr, 
         const evmc::bytes32 &key, 
         const evmc::bytes32 &value
     ) {
+        auto tx = tx_ref;
         auto _key   = std::make_tuple(addr, key);
         tx->tuples_put.push_back({
             .key = _key, 
@@ -283,10 +290,11 @@ std::unique_ptr<T> SpectrumExecutor::Create() {
         if (tx->HasRerunKeys()) { tx->Break(); }
         return evmc_storage_status::EVMC_STORAGE_MODIFIED;
     });
-    tx->UpdateGetStorageHandler([&](
+    tx->UpdateGetStorageHandler([tx_ref, this](
         const evmc::address &addr, 
         const evmc::bytes32 &key
     ) {
+        auto tx = tx_ref;
         auto _key   = std::make_tuple(addr, key);
         auto value  = evmc::bytes32{0};
         auto version = size_t{0};
@@ -298,7 +306,7 @@ std::unique_ptr<T> SpectrumExecutor::Create() {
             if (tup.key == _key) { return tup.value; }
         }
         if (tx->HasRerunKeys()) { tx->Break(); return evmc::bytes32{0}; }
-        table.Get(tx.get(), _key, value, version);
+        table.Get(tx, _key, value, version);
         size_t checkpoint_id = tx->MakeCheckpoint();
         tx->tuples_get.push_back({
             .key            = _key, 
@@ -350,7 +358,7 @@ void SpectrumExecutor::ReExecute(SpectrumTransaction* tx) {
             table.RegretPut(tx, tx->tuples_put[i].key);
         }
     }
-    for (size_t i = back_to; i < tx->tuples_put.size(); ++i) {
+    for (size_t i = back_to; i < tx->tuples_get.size(); ++i) {
         table.RegretGet(tx, tx->tuples_get[i].key, tx->tuples_get[i].version);
     }
     tx->tuples_put.resize(tup.tuples_put_len);
@@ -368,24 +376,10 @@ void SpectrumExecutor::ReExecute(SpectrumTransaction* tx) {
 
 /// @brief start an executor
 void SpectrumExecutor::Run() {while (!stop_flag.load()) {
-    if (last_execute.load() - last_finalized.load() < this->queue_amplification) {
-        queue.Push(Create());
-        continue;
-    }
-    auto tx = queue.Pop().value_or(std::unique_ptr<T>(nullptr));
-    if (tx.get() == nullptr) {
-        LOG(WARNING) << "queue is empty, performance may deteriorate. ";
-        continue;
-    }
-    auto ticket = size_t{0};
-    while (true) {
+    auto tx = Create();
+    while (!stop_flag.load()) {
         DLOG(INFO) << "loop " << tx->id << std::endl;
-        if (last_finalized.load() < tx->should_wait) {
-            DLOG(INFO) << "requeue " << tx->id;
-            queue.Push(std::move(tx));
-            break;
-        }
-        else if (tx->HasRerunKeys()) {
+        if (tx->HasRerunKeys()) {
             // sweep all operations from previous execution
             DLOG(INFO) << "re-execute " << tx->id;
             ReExecute(tx.get());
@@ -401,11 +395,6 @@ void SpectrumExecutor::Run() {while (!stop_flag.load()) {
             }
             auto latency = duration_cast<microseconds>(steady_clock::now() - tx->start_time).count();
             statistics.JournalCommit(latency);
-            break;
-        }
-        else if (++ticket >= 10) {
-            DLOG(INFO) << "out of ticket " << tx->id;
-            queue.Push(std::move(tx));
             break;
         }
     }
