@@ -24,8 +24,8 @@ struct CalvinTransaction : public Transaction {
 
     std::mutex          mu;
     size_t              id;
-    size_t              should_wait;
-    Prediction          prediction;
+    size_t              should_wait{0};
+    Prediction          prediction{};
     std::chrono::time_point<std::chrono::steady_clock> start_time;
     CalvinTransaction(Transaction &&inner, size_t id);
     void UpdateWait(size_t id);
@@ -71,9 +71,9 @@ class Calvin : public Protocol {
     size_t                      n_dispatchers;
     size_t                      n_executors;
     std::atomic<bool>           stop_flag{false};
-    std::atomic<size_t>         last_scheduled;
-    std::atomic<size_t>         last_committed;
-    std::atomic<size_t>         last_assigned;
+    std::atomic<size_t>         last_scheduled{1};
+    std::atomic<size_t>         last_committed{0};
+    std::atomic<size_t>         last_assigned{0};
     std::vector<CalvinQueue>    queue_bundle;
     std::vector<std::thread>    executors;
     std::vector<std::thread>    dispatchers;

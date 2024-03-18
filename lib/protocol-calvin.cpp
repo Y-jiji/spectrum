@@ -25,7 +25,9 @@ CalvinTransaction::CalvinTransaction(Transaction&& inner, size_t id):
 
 void CalvinTransaction::UpdateWait(size_t id) {
     auto guard = std::lock_guard{mu};
-    should_wait = std::max(id, should_wait);
+    if (id < this->id) { 
+        should_wait = std::max(id, should_wait);
+    }
 }
 
 /// @brief the multi-version lock table for calvin
@@ -38,8 +40,12 @@ CalvinLockTable::CalvinLockTable(size_t partitions):
 /// @param tx the transaction the previously wrote this entry
 /// @param k the key of written entry
 void CalvinLockTable::Release(T* tx, const K& k) {
-    DLOG(INFO) << "regret put" << tx->id << std::endl;
+    DLOG(INFO) << "clear put " << tx->id << std::endl;
     Table::Put(k, [&](auto& _v) {
+        for (auto& entry: _v.entries) {
+            entry.readers.erase(tx);
+        }
+        _v.readers_default.erase(tx);
         while (_v.entries.size() && _v.entries.front().version < tx->id) {
             _v.entries.pop_front();
         }
@@ -165,6 +171,7 @@ CalvinExecutor::CalvinExecutor(Calvin& calvin, CalvinQueue& queue):
 void CalvinExecutor::Run() {while(!stop_flag.load()) {
     auto tx = queue.Pop();
     if (tx == nullptr) { continue; }
+    DLOG(INFO) << "execute " << tx->id << std::endl;
     tx->UpdateGetStorageHandler([&](auto& address, auto& key) {
         V v; table.Get({address, key}, [&](auto& _v) { v = _v; });
         return v;
@@ -203,14 +210,20 @@ void CalvinDispatch::Run() {while(!stop_flag.load()) {
         lock_table.Put(tx.get(), k);
     }
     // wait until the should_wait to finalize
-    while (tx->id != last_assigned.load() + 1) {}
+    while (tx->id != last_assigned.load() + 1) {
+        DLOG(INFO) << tx->id << " wait last assigned" << std::endl;
+    }
     last_assigned.fetch_add(1);
+    for (auto& k: tx->prediction.get) {
+        lock_table.Release(tx.get(), k);
+    }
     for (auto& k: tx->prediction.put) {
         lock_table.Release(tx.get(), k);
     }
     // now we have the real should_wait, so we wait until it can be executed
     while (true) {
         auto guard = std::lock_guard{tx->mu}; 
+        DLOG(INFO) << tx->id << " wait " << tx->should_wait << std::endl;
         if (tx->should_wait <= last_committed.load()) break;
     }
     queue_bundle[tx->id % queue_bundle.size()].Push(std::move(tx));
