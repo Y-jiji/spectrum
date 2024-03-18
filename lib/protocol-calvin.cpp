@@ -209,6 +209,7 @@ void CalvinDispatch::Run() {while(!stop_flag.load()) {
     // generate and analyze the transaction
     auto tx = std::make_unique<T>(workload.Next(), last_scheduled.fetch_add(1));
     // make get/put requests in lock table
+    DLOG(INFO) << tx->id << " fetch locks" << std::endl;
     for (auto& k: tx->prediction.get) {
         lock_table.Get(tx.get(), k);
     }
@@ -219,13 +220,14 @@ void CalvinDispatch::Run() {while(!stop_flag.load()) {
     while (tx->id != last_assigned.load() + 1) {
         DLOG(INFO) << tx->id << " wait last assigned" << std::endl;
     }
-    last_assigned.fetch_add(1);
+    DLOG(INFO) << tx->id << " release locks" << std::endl;
     for (auto& k: tx->prediction.get) {
         lock_table.Release(tx.get(), k);
     }
     for (auto& k: tx->prediction.put) {
         lock_table.Release(tx.get(), k);
     }
+    last_assigned.fetch_add(1);
     // now we have the real should_wait, so we wait until it can be executed
     while (true) {
         auto guard = std::lock_guard{tx->mu}; 
