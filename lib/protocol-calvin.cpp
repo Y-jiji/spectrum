@@ -97,6 +97,9 @@ void CalvinLockTable::Put(T* tx, const K& k) {
                     readers_.insert(*it);
                     (*it)->UpdateWait(tx->id);
                 }
+                else {
+                    tx->UpdateWait((*it)->id);
+                }
             }
             break;
         }
@@ -105,6 +108,9 @@ void CalvinLockTable::Put(T* tx, const K& k) {
                 _v.readers_default.erase(it);
                 readers_.insert(*it);
                 (*it)->UpdateWait(tx->id);
+            }
+            else {
+                tx->UpdateWait((*it)->id);
             }
         }
         // insert an entry, with readers exempted from previous version
