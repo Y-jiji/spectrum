@@ -1,4 +1,4 @@
-#include "evm_hash.hpp"
+#include "./evm_hash.hpp"
 #include "protocol.hpp"
 #include "statistics.hpp"
 #include "table.hpp"
@@ -31,13 +31,10 @@ struct CalvinTransaction : public Transaction {
     void UpdateWait(size_t id);
 
 };
-
 struct CalvinLockEntry {
-
     T*                      tx;
     size_t                  version;
     std::unordered_set<T*>  readers;
-
 };
 
 struct CalvinLockQueue {
