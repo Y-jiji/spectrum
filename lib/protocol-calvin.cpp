@@ -23,10 +23,10 @@ CalvinTransaction::CalvinTransaction(Transaction&& inner, size_t id):
     this->Analyze(this->prediction);
 }
 
-void CalvinTransaction::UpdateWait(size_t id) {
+void CalvinTransaction::UpdateWait(size_t _id) {
     auto guard = std::lock_guard{mu};
-    if (id < this->id) { 
-        should_wait = std::max(id, should_wait);
+    if (_id < id) { 
+        should_wait = std::max(_id, should_wait);
     }
 }
 
@@ -46,7 +46,7 @@ void CalvinLockTable::Release(T* tx, const K& k) {
             entry.readers.erase(tx);
         }
         _v.readers_default.erase(tx);
-        while (_v.entries.size() && _v.entries.front().version < tx->id) {
+        while (_v.entries.size() && _v.entries.front().version <= tx->id) {
             _v.entries.pop_front();
         }
     });
@@ -65,7 +65,7 @@ void CalvinLockTable::Get(T* tx, const K& k) {
                 ++rit; continue;
             }
             rit->readers.insert(tx);
-            tx->UpdateWait(tx->id);
+            rit->tx->UpdateWait(tx->id);
             if (rit != _v.entries.rbegin()) {
                 (--rit)->tx->UpdateWait(tx->id);
             }
@@ -91,26 +91,29 @@ void CalvinLockTable::Put(T* tx, const K& k) {
                 ++rit; continue;
             }
             // reset transactions' should_wait that read outdated keys
-            for (auto it = rit->readers.begin(); it != rit->readers.end(); ++it) {
-                if ((*it)->id > tx->id) {
-                    rit->readers.erase(it);
+            for (auto it = rit->readers.begin(); it != rit->readers.end();) {
+                if ((*it)->id >= tx->id) {
                     readers_.insert(*it);
                     (*it)->UpdateWait(tx->id);
+                    // this one is very tricky. we **must** use `it++` here.  
+                    rit->readers.erase(it++);
                 }
                 else {
                     tx->UpdateWait((*it)->id);
+                    ++it;
                 }
             }
             break;
         }
-        for (auto it = _v.readers_default.begin(); it != _v.readers_default.end(); ++it) {
-            if ((*it)->id > tx->id) {
-                _v.readers_default.erase(it);
+        for (auto it = _v.readers_default.begin(); it != _v.readers_default.end();) {
+            if ((*it)->id >= tx->id) {
                 readers_.insert(*it);
                 (*it)->UpdateWait(tx->id);
+                _v.readers_default.erase(it++);
             }
             else {
                 tx->UpdateWait((*it)->id);
+                ++it;
             }
         }
         // insert an entry, with readers exempted from previous version
