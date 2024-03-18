@@ -2,6 +2,7 @@
 #include "./table.hpp"
 #include "./protocol.hpp"
 #include "./evm_hash.hpp"
+#include "./lock_queue.hpp"
 #include <list>
 #include <atomic>
 #include <tuple>
@@ -55,31 +56,7 @@ struct SparkleTable: private Table<K, V, KeyHasher> {
 
 };
 
-/// @brief sparkle queue
-class SparkleQueue {
-
-    #define TP std::unique_ptr<T>
-
-    struct Cmp {
-        bool operator()(const TP& l, const TP& r) { 
-            return l->id > r->id; 
-        }
-    };
-
-    private:
-    std::mutex mu;
-    std::priority_queue<TP, std::vector<TP>, Cmp> queue;
-
-    public:
-    SparkleQueue() = default;
-    void Push(std::unique_ptr<T>&& tx);
-    std::unique_ptr<T> Pop();
-    size_t Size();
-
-    #undef TP
-
-};
-
+using SparkleQueue = LockQueue<T>;
 class SparkleDispatch;
 class SparkleExecutor;
 
