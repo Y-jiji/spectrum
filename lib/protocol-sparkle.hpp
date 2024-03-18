@@ -46,13 +46,13 @@ struct SparkleVersionList {
 struct SparkleTable: private Table<K, V, KeyHasher> {
 
     SparkleTable(size_t partitions);
-    void Get(T* tx, const K k, evmc::bytes32& v, size_t& version);
-    void Put(T* tx, const K k, const evmc::bytes32& v);
-    bool Lock(T* tx, const K k);
-    void RegretGet(T* tx, const K k, size_t version);
-    void RegretPut(T* tx, const K k);
-    void ClearGet(T* tx, const K k, size_t version);
-    void ClearPut(T* tx, const K k);
+    void Get(T* tx, const K& k, evmc::bytes32& v, size_t& version);
+    void Put(T* tx, const K& k, const evmc::bytes32& v);
+    bool Lock(T* tx, const K& k);
+    void RegretGet(T* tx, const K& k, size_t version);
+    void RegretPut(T* tx, const K& k);
+    void ClearGet(T* tx, const K& k, size_t version);
+    void ClearPut(T* tx, const K& k);
 
 };
 
