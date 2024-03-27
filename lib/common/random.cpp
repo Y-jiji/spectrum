@@ -1,4 +1,4 @@
-#include "./random.hpp"
+#include <spectrum/common/random.hpp>
 #include <glog/logging.h>
 #include <cmath>
 #include <stdexcept>

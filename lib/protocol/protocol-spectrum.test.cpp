@@ -3,7 +3,7 @@
 #include <spectrum/evm_transaction.hpp>
 #include <spectrum/workload/smallbank.hpp>
 #include <span>
-#include "glog-prefix-install.test.hpp"
+#include "glog-prefix.hpp"
 
 namespace {
 
@@ -13,7 +13,7 @@ using namespace spectrum;
 using namespace std::chrono_literals;
 
 TEST(Spectrum, JustRunSmallbank) {
-    GLOG_PREFIX;
+    google::InstallPrefixFormatter(PrefixFormatter);
     auto statistics = Statistics();
     auto workload = Smallbank(10000, 0.0);
     auto protocol = Spectrum(workload, statistics, 8, 32, 2, EVMType::COPYONWRITE);

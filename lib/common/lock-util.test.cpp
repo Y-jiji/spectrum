@@ -4,14 +4,14 @@
 #include <spectrum/hex.hpp>
 #include <evmc/evmc.hpp>
 #include <span>
-#include "glog-prefix-install.test.hpp"
+#include <spectrum/common/glog-prefix.hpp>
 
 namespace {
 
 using namespace spectrum;
 
 TEST(Table, Operations) {
-    GLOG_PREFIX;
+    google::InstallPrefixFormatter(PrefixFormatter);
     auto table = spectrum::Table<std::tuple<evmc::address, evmc::bytes32>, evmc::bytes32, KeyHasher>(20);
     auto k = std::make_tuple(evmc::address{0x1}, evmc::bytes32{0x2});
     table.Put(k, [](evmc::bytes32& v) { v = evmc::bytes32{0x100}; });

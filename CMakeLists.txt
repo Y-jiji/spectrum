@@ -170,7 +170,7 @@ add_library(spectrum ${SRC})
 
 target_include_directories(
     spectrum
-    PUBLIC ${CMAKE_BINARY_DIR}/include
+    PUBLIC  ${CMAKE_BINARY_DIR}/include
 )
 target_compile_features(
     spectrum
