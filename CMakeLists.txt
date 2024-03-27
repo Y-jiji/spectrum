@@ -124,6 +124,12 @@ GitHub(
     BRANCH  "gperftools-2.15"
     AS      "CMAKE SCANLIB"
 )
+GitHub(
+    USER    "SRombauts"
+    REPO    "SQLiteCpp"
+    BRANCH  "3.3.1"
+    AS      "CMAKE INSTALL"
+)
 
 # -- compile options
 
@@ -169,7 +175,7 @@ target_compile_features(
 target_link_libraries(
     spectrum
     PUBLIC evmc intx::intx fmt tcmalloc
-    PRIVATE gflags ethash::keccak glog::glog Threads::Threads
+    PRIVATE gflags ethash::keccak glog::glog Threads::Threads SQLiteCpp
 )
 
 unset(SRC)
