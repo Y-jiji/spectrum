@@ -1,7 +1,7 @@
-#include "./protocol-sparkle.hpp"
+#include "protocol-sparkle.hpp"
 #include "lock-util.hpp"
-#include "./hex.hpp"
-#include "./thread-util.hpp"
+#include "hex.hpp"
+#include "thread-util.hpp"
 #include <functional>
 #include <thread>
 #include <chrono>

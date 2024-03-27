@@ -1,7 +1,7 @@
 #include "workload/abstraction.hpp"
 #include "lock-util.hpp"
-#include "./protocol.hpp"
-#include "./evm_hash.hpp"
+#include "protocol.hpp"
+#include "evm_hash.hpp"
 #include <list>
 #include <atomic>
 #include <tuple>

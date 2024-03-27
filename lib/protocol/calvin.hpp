@@ -1,6 +1,6 @@
-#include "./evm_hash.hpp"
-#include "protocol.hpp"
-#include "statistics.hpp"
+#include "evm_hash.hpp"
+#include <spectrum/protocol/abstraction.hpp>
+#include <spectrum/common/statistics.hpp>
 #include "lock-util.hpp"
 #include "workload/abstraction.hpp"
 #include <atomic>

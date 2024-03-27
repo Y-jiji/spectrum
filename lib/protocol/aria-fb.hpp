@@ -3,8 +3,8 @@
 #include "evm_hash.hpp"
 #include "evm_transaction.hpp"
 #include "workload/abstraction.hpp"
-#include "protocol.hpp"
-#include "statistics.hpp"
+#include <spectrum/protocol/abstraction.hpp>
+#include <spectrum/common/statistics.hpp>
 #include <tuple>
 #include <list>
 #include <unordered_map>

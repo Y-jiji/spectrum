@@ -1,4 +1,4 @@
-#include "./protocol-aria-fb.hpp"
+#include <spectrum/protocol/aria-fb.hpp>
 #include "thread-util.hpp"
 #include <fmt/core.h>
 
