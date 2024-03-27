@@ -6,51 +6,48 @@
 #include <iostream>
 #include <glog/logging.h>
 #include <cstdlib>
-
+#include <thread>
+#include <ethash/keccak.hpp>
 namespace spectrum {
 
-Statistics::Statistics() {
-    for (size_t i = 0; i < percentile_latency.size(); ++i) {
-        percentile_latency[i] = 0;
-    }
-}
-
 void Statistics::JournalCommit(size_t latency) {
-    count_commit.fetch_add(1, std::memory_order_seq_cst);
+    auto count_commit_ = count_commit.fetch_add(1, std::memory_order_relaxed);
     if (latency <= 25) {
-        count_latency_25us.fetch_add(1, std::memory_order_seq_cst);
+        count_latency_25us.fetch_add(1, std::memory_order_relaxed);
     }
     else if (latency <= 50) {
-        count_latency_50us.fetch_add(1, std::memory_order_seq_cst);
+        count_latency_50us.fetch_add(1, std::memory_order_relaxed);
     }
     else if (latency <= 100) {
-        count_latency_100us.fetch_add(1, std::memory_order_seq_cst);
+        count_latency_100us.fetch_add(1, std::memory_order_relaxed);
     }
     else {
-        count_latency_100us_above.fetch_add(1, std::memory_order_seq_cst);
+        count_latency_100us_above.fetch_add(1, std::memory_order_relaxed);
     }
-    // substitute the closest value in percentile
-    if (percentile_populated.load() && rand() % 100 != 0) { return; }
-    auto guard = Guard{percentile_latency_mu};
-    if (latency < percentile_latency[0]) {
-        percentile_latency[0] = latency;
-        return;
+    DLOG(INFO) << "latency: " << latency << std::endl;
+    auto random = ethash::keccak256((uint8_t*)&count_commit_, 4).word64s[count_commit_ % 4] % count_commit_;
+    if (count_commit_ < SAMPLE) {
+        sample_latency[count_commit_].store(latency);
     }
-    for (size_t i = 0; i < percentile_latency.size() - 1; ++i) {
-        if (latency >= percentile_latency[i+1]) { continue; }
-        percentile_latency[i]   = latency;
-        percentile_latency[i+1] = latency;
-        if (i == 0) percentile_populated.store(true);
-        return;
+    else if (random < SAMPLE) {
+        sample_latency[random].store(latency);
     }
-    percentile_latency[percentile_latency.size()-1] = latency;
 }
 
 void Statistics::JournalExecute() {
-    count_execution.fetch_add(1, std::memory_order_seq_cst);
+    count_execution.fetch_add(1, std::memory_order_relaxed);
 }
 
 std::string Statistics::Print() {
+    #define PERCENTILE(X) sample_latency_[X * sample_latency_.size() / 100]
+    auto sample_latency_ = std::vector<size_t>();
+    std::transform(
+        sample_latency.begin(), 
+        sample_latency.end(), 
+        std::back_inserter(sample_latency_),
+        [](auto& x) { return x.load(); }
+    );
+    std::sort(sample_latency_.begin(), sample_latency_.end());
     return std::string(fmt::format(
         "@{}\n"
         "commit             {}\n"
@@ -70,16 +67,25 @@ std::string Statistics::Print() {
         count_latency_50us.load(),
         count_latency_100us.load(),
         count_latency_100us_above.load(),
-        percentile_latency[49], 
-        percentile_latency[74], 
-        percentile_latency[94], 
-        percentile_latency[98]
+        PERCENTILE(50),
+        PERCENTILE(75),
+        PERCENTILE(95),
+        PERCENTILE(99)
     ));
-    #undef nth
+    #undef PERCENTILE
 }
 
 std::string Statistics::PrintWithDuration(std::chrono::milliseconds duration) {
     #define AVG(X) ((double)(X.load()) / (double)(duration.count()) * (double)(1000))
+    #define PERCENTILE(X) sample_latency_[X * sample_latency_.size() / 100]
+    auto sample_latency_ = std::vector<size_t>();
+    std::transform(
+        sample_latency.begin(), 
+        sample_latency.end(), 
+        std::back_inserter(sample_latency_),
+        [](auto& x) { return x.load(); }
+    );
+    std::sort(sample_latency_.begin(), sample_latency_.end());
     return std::string(fmt::format(
         "@{}\n"
         "duration      {}\n"
@@ -101,13 +107,13 @@ std::string Statistics::PrintWithDuration(std::chrono::milliseconds duration) {
         AVG(count_latency_50us),
         AVG(count_latency_100us),
         AVG(count_latency_100us_above),
-        percentile_latency[49], 
-        percentile_latency[74], 
-        percentile_latency[94], 
-        percentile_latency[98]
+        PERCENTILE(50),
+        PERCENTILE(75),
+        PERCENTILE(95),
+        PERCENTILE(99)
     ));
     #undef AVG
-    #undef nth
+    #undef PERCENTILE
 }
 
 } // namespace spectrum
