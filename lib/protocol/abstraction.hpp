@@ -1,5 +1,5 @@
 #pragma once
-#include "statistics.hpp"
+#include <spectrum/common/statistics.hpp>
 
 namespace spectrum {
 

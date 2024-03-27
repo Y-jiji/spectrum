@@ -1,7 +1,7 @@
-#include "protocol-spectrum.hpp"
-#include "lock-util.hpp"
-#include "hex.hpp"
-#include "thread-util.hpp"
+#include <spectrum/protocol/spectrum.hpp>
+#include <spectrum/common/lock-util.hpp>
+#include <spectrum/common/hex.hpp>
+#include <spectrum/common/thread-util.hpp>
 #include <functional>
 #include <thread>
 #include <chrono>

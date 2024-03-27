@@ -1,5 +1,5 @@
 #include "smallbank.hpp"
-#include "../hex.hpp"
+#include <spectrum/common/hex.hpp>
 #include <optional>
 #include <glog/logging.h>
 #include <fmt/core.h>

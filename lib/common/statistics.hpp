@@ -1,7 +1,7 @@
 #pragma once
 #include <atomic>
 #include <chrono>
-#include "./lock-util.hpp"
+#include <spectrum/common/lock-util.hpp>
 #include <set>
 #include <iterator>
 #include <array>

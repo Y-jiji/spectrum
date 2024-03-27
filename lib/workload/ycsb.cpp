@@ -1,5 +1,5 @@
 #include "ycsb.hpp"
-#include "../hex.hpp"
+#include <spectrum/common/hex.hpp>
 #include <fmt/core.h>
 #include <glog/logging.h>
 #include <optional>

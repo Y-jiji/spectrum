@@ -1,4 +1,4 @@
-#include "protocol-serial.hpp"
+#include <spectrum/protocol/serial.hpp>
 #include <chrono>
 
 namespace spectrum {

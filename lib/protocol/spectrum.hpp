@@ -1,7 +1,7 @@
-#include "workload/abstraction.hpp"
-#include "lock-util.hpp"
+#include <spectrum/workload/abstraction.hpp>
+#include <spectrum/common/lock-util.hpp>
 #include <spectrum/protocol/abstraction.hpp>
-#include "evm_hash.hpp"
+#include <spectrum/common/evm_hash.hpp>
 #include <list>
 #include <atomic>
 #include <tuple>

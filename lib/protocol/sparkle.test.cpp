@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
-#include <spectrum/protocol-sparkle.hpp>
-#include <spectrum/evm_transaction.hpp>
+#include <spectrum/protocol/sparkle.hpp>
+#include <spectrum/common/evm_transaction.hpp>
 #include <spectrum/workload/smallbank.hpp>
 #include <span>
-#include "glog-prefix.hpp"
+#include <spectrum/common/glog-prefix.hpp>
 
 namespace {
 

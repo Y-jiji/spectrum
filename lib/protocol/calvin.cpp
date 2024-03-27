@@ -1,6 +1,6 @@
-#include "protocol-calvin.hpp"
-#include "hex.hpp"
-#include "thread-util.hpp"
+#include <spectrum/protocol/calvin.hpp>
+#include <spectrum/common/hex.hpp>
+#include <spectrum/common/thread-util.hpp>
 #include <algorithm>
 #include <string>
 #include <vector>

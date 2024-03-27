@@ -1,5 +1,5 @@
 #include <spectrum/protocol/aria-fb.hpp>
-#include "thread-util.hpp"
+#include <spectrum/common/thread-util.hpp>
 #include <fmt/core.h>
 
 /*

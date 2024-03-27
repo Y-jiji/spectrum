@@ -1,10 +1,10 @@
-#include <spectrum/protocol.hpp>
-#include <spectrum/protocol-spectrum.hpp>
-#include <spectrum/protocol-sparkle.hpp>
-#include <spectrum/protocol-aria-fb.hpp>
-#include <spectrum/protocol-serial.hpp>
-#include <spectrum/protocol-calvin.hpp>
-#include <spectrum/protocol-dummy.hpp>
+#include <spectrum/protocol/abstraction.hpp>
+#include <spectrum/protocol/spectrum.hpp>
+#include <spectrum/protocol/sparkle.hpp>
+#include <spectrum/protocol/aria-fb.hpp>
+#include <spectrum/protocol/serial.hpp>
+#include <spectrum/protocol/calvin.hpp>
+#include <spectrum/protocol/dummy.hpp>
 #include <spectrum/workload/abstraction.hpp>
 #include <spectrum/workload/smallbank.hpp>
 #include <spectrum/workload/ycsb.hpp>
@@ -24,8 +24,9 @@ using namespace std::chrono_literals;
 using namespace std::chrono;
 
 bool reverse() {
-    auto i = int(0);
-    auto x = std::make_tuple(i++, i++);
+    auto v = std::vector<int>{0, 1, 2};
+    auto i = v.begin();
+    auto x = std::make_tuple(*++i, *++i);
     return std::get<0>(x) == 1;
 }
 

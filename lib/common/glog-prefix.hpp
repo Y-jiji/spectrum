@@ -1,3 +1,6 @@
+#include <fmt/core.h>
+#include <iomanip>
+
 void PrefixFormatter(std::ostream& s, const google::LogMessage& m, void* data) {
     auto color = [&m](){
         switch (m.severity()) {

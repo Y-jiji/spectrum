@@ -1,8 +1,8 @@
-#include "evm_hash.hpp"
+#include <spectrum/common/evm_hash.hpp>
 #include <spectrum/protocol/abstraction.hpp>
 #include <spectrum/common/statistics.hpp>
-#include "lock-util.hpp"
-#include "workload/abstraction.hpp"
+#include <spectrum/common/lock-util.hpp>
+#include <spectrum/workload/abstraction.hpp>
 #include <atomic>
 #include <deque>
 #include <chrono>

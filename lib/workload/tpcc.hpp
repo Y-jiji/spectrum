@@ -1,4 +1,4 @@
-#include "workload/abstraction.hpp"
+#include <spectrum/workload/abstraction.hpp>
 
 namespace spectrum {
 

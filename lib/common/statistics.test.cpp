@@ -1,6 +1,6 @@
-#include <spectrum/statistics.hpp>
+#include <spectrum/common/statistics.hpp>
 #include <thread>
-#include "glog-prefix.hpp"
+#include <spectrum/common/glog-prefix.hpp>
 #include <gtest/gtest.h>
 
 namespace {

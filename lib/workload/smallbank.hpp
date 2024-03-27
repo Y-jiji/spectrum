@@ -1,5 +1,5 @@
-#include "abstract.hpp"
-#include "../random.hpp"
+#include <spectrum/workload/abstraction.hpp>
+#include <spectrum/common/random.hpp>
 
 namespace spectrum {
 

@@ -1,4 +1,4 @@
-#include "protocol-dummy.hpp"
+#include <spectrum/protocol/dummy.hpp>
 #include <fmt/core.h>
 
 namespace spectrum {

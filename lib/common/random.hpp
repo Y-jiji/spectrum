@@ -2,7 +2,7 @@
 #include <random>
 #include <memory>
 #include <functional>
-#include "lock-util.hpp"
+#include <spectrum/common/lock-util.hpp>
 
 namespace spectrum {
 

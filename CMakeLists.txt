@@ -12,7 +12,8 @@ option(DEBUG OFF)
 option(EVM_PRINT_INSTRUCTIONS "print each evm instruction on instruction start" 0)
 find_package(Threads REQUIRED)
 
-# -- Manage External Dependencies
+# -- Manage External Dependencies Using Github
+
 function(GitHub)
     cmake_parse_arguments(GH "" "USER;REPO;BRANCH;AS;PACK;FLAGS;DIR" "" "${ARGV}")
     message(STATUS "GITHUB " ${GH_USER}/${GH_REPO}/${GH_BRANCH})
@@ -131,7 +132,7 @@ GitHub(
     AS      "CMAKE INSTALL"
 )
 
-# -- compile options
+# -- Manage Compile Options w/ DEBUG flag
 
 if(DEBUG)
     add_compile_options(-fsanitize=address)
@@ -151,7 +152,7 @@ else()
     )
 endif()
 
-# -- process the main library
+# -- Process Main Library & Unit Tests
 
 file(GLOB_RECURSE SRC lib/*.cpp lib/*.c)
 file(GLOB_RECURSE INC lib/*.hpp lib/*.h)
@@ -206,7 +207,7 @@ unset(INC_TEST)
 unset(INC)
 unset(SRC)
 
-# -- add executables
+# -- Process Executables
 
 file(GLOB_RECURSE SRC bin/*.cpp)
 

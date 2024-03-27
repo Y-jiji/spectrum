@@ -1,4 +1,4 @@
-#include "thread-util.hpp"
+#include <spectrum/common/thread-util.hpp>
 #include <thread>
 #include <pthread.h>
 #include <string>

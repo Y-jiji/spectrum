@@ -1,4 +1,4 @@
-#include "./statistics.hpp"
+#include <spectrum/common/statistics.hpp>
 #include <fmt/core.h>
 #include <fmt/chrono.h>
 #include <fmt/format.h>
