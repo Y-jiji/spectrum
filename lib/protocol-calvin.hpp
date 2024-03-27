@@ -2,7 +2,7 @@
 #include "protocol.hpp"
 #include "statistics.hpp"
 #include "lock-util.hpp"
-#include "workload.hpp"
+#include "workload/abstraction.hpp"
 #include <atomic>
 #include <deque>
 #include <chrono>

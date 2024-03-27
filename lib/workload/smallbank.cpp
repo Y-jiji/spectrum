@@ -1,5 +1,5 @@
-#include "./workload-smallbank.hpp"
-#include "./hex.hpp"
+#include "smallbank.hpp"
+#include "../hex.hpp"
 #include <optional>
 #include <glog/logging.h>
 #include <fmt/core.h>
@@ -7,7 +7,7 @@
 namespace spectrum {
 
 const static char* CODE = 
-    #include "../contracts/smallbank.bin"
+    #include "../../contracts/smallbank.bin"
 ;
 
 Smallbank::Smallbank(size_t num_elements, double zipf_exponent): 

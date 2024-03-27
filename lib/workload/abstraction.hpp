@@ -1,7 +1,7 @@
 #pragma once
 #include <variant>
 #include <functional>
-#include "./evm_transaction.hpp"
+#include "../evm_transaction.hpp"
 
 namespace spectrum {
 

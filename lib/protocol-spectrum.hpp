@@ -1,4 +1,4 @@
-#include "workload.hpp"
+#include "workload/abstraction.hpp"
 #include "lock-util.hpp"
 #include "protocol.hpp"
 #include "evm_hash.hpp"

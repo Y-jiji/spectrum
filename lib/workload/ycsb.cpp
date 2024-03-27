@@ -1,5 +1,5 @@
-#include "./workload-ycsb.hpp"
-#include "./hex.hpp"
+#include "ycsb.hpp"
+#include "../hex.hpp"
 #include <fmt/core.h>
 #include <glog/logging.h>
 #include <optional>
@@ -7,7 +7,7 @@
 namespace spectrum {
 
 const static char* CODE = 
-    #include "../contracts/ycsb.bin"
+    #include "../../contracts/ycsb.bin"
 ;
 
 YCSB::YCSB(size_t num_elements, double zipf_exponent): 

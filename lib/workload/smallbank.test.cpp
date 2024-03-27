@@ -1,4 +1,4 @@
-#include <spectrum/workload-smallbank.hpp>
+#include <spectrum/workload/smallbank.hpp>
 #include <spectrum/evm_hash.hpp>
 #include <spectrum/hex.hpp>
 #include <gtest/gtest.h>
@@ -7,7 +7,7 @@
 #include <chrono>
 #include <thread>
 #include <spectrum/statistics.hpp>
-#include "glog-prefix-install.test.hpp"
+#include "../glog-prefix-install.test.hpp"
 
 namespace {
 

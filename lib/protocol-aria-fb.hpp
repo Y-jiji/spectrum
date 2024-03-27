@@ -2,7 +2,7 @@
 #include "lock-util.hpp"
 #include "evm_hash.hpp"
 #include "evm_transaction.hpp"
-#include "workload.hpp"
+#include "workload/abstraction.hpp"
 #include "protocol.hpp"
 #include "statistics.hpp"
 #include <tuple>

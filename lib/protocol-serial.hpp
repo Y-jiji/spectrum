@@ -1,5 +1,5 @@
 #include "protocol.hpp"
-#include "workload.hpp"
+#include "workload/abstraction.hpp"
 #include "statistics.hpp"
 #include "evm_hash.hpp"
 #include <thread>
