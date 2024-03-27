@@ -154,7 +154,10 @@ endif()
 # -- add the main library
 
 file(GLOB_RECURSE SRC lib/*.cpp)
+file(GLOB_RECURSE UNI lib/*.test.cpp)
 file(GLOB_RECURSE INC lib/*.hpp lib/*.h)
+
+list(REMOVE_ITEM  ${SRC} ${UNI})
 
 foreach(F ${INC})
     file(RELATIVE_PATH REL ${CMAKE_CURRENT_SOURCE_DIR}/lib ${F})
@@ -166,7 +169,7 @@ add_library(spectrum ${SRC})
 
 target_include_directories(
     spectrum
-    PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/include
+    PUBLIC ${CMAKE_BINARY_DIR}/include
 )
 target_compile_features(
     spectrum
@@ -178,23 +181,14 @@ target_link_libraries(
     PRIVATE gflags ethash::keccak glog::glog Threads::Threads SQLiteCpp
 )
 
-unset(SRC)
-unset(INC)
-
-# -- add some unit-tests
-
-file(GLOB_RECURSE SRC unit-tests/*.test.cpp)
-
-foreach(F ${SRC})
-    file(RELATIVE_PATH REL ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests ${F})
-    string(REPLACE ".test.cpp" "" REL ${REL})
-    add_executable(unit-test-${REL} ${F})
-    target_link_libraries(
-        unit-test-${REL}
-        PRIVATE gflags gtest_main spectrum glog::glog Threads::Threads
-    )
+foreach(F ${UNI})
+    file(RELATIVE_PATH REL ${CMAKE_CURRENT_SOURCE_DIR}/lib ${F})
+    string(REPLACE ".cpp" "" REL ${REL})
+    add_executable(${REL} ${F})
 endforeach()
 
+unset(UNI)
+unset(INC)
 unset(SRC)
 
 # -- add executables
