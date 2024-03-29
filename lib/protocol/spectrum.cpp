@@ -243,7 +243,7 @@ Spectrum::Spectrum(Workload& workload, Statistics& statistics, size_t num_execut
     stop_latch{static_cast<ptrdiff_t>(num_executors), []{}}
 {
     LOG(INFO) << fmt::format("Spectrum(num_executors={}, table_partitions={}, evm_type={})", num_executors, table_partitions, evm_type);
-    workload.SetEVMType(evm_type);
+    workload.SetEVMType(EVMType::BASIC);
 }
 
 /// @brief start spectrum protocol
@@ -342,37 +342,23 @@ void SpectrumExecutor::ReExecute() {
         auto guard = Guard{tx->rerun_keys_mu}; 
         std::swap(tx->rerun_keys, rerun_keys);
     }
-    auto back_to = ~size_t{0};
-    // find checkpoint
-    for (auto& key: rerun_keys) {
-        for (size_t i = 0; i < tx->tuples_get.size(); ++i) {
-            if (tx->tuples_get[i].key != key) { continue; }
-            back_to = std::min(i, back_to); break;
-        }
-    }
     // good news: we don't have to rollback
-    if (back_to == ~size_t{0}) { return; }
+    if (rerun_keys.size() == 0) { return; }
     // bad news: we have to rollback
-    auto& tup = tx->tuples_get[back_to];
-    tx->ApplyCheckpoint(tup.checkpoint_id);
-    for (size_t i = tup.tuples_put_len; i < tx->tuples_put.size(); ++i) {
-        if (tx->tuples_put[i].is_committed) {
-            table.RegretPut(tx.get(), tx->tuples_put[i].key);
-        }
+    tx->ApplyCheckpoint(0);
+    for (size_t i = 0; i < tx->tuples_put.size(); ++i) {
+        table.RegretPut(tx.get(), tx->tuples_put[i].key);
     }
-    for (size_t i = back_to; i < tx->tuples_get.size(); ++i) {
+    for (size_t i = 0; i < tx->tuples_get.size(); ++i) {
         table.RegretGet(tx.get(), tx->tuples_get[i].key, tx->tuples_get[i].version);
     }
-    tx->tuples_put.resize(tup.tuples_put_len);
-    tx->tuples_get.resize(back_to);
+    tx->tuples_put.resize(0);
+    tx->tuples_get.resize(0);
     tx->Execute();
     statistics.JournalExecute();
     // commit all results if possible & necessary
     for (auto entry: tx->tuples_put) {
-        if (tx->HasRerunKeys()) { break; }
-        if (entry.is_committed) { continue; }
         table.Put(tx.get(), entry.key, entry.value);
-        entry.is_committed = true;
     }
 }
 
