@@ -94,7 +94,16 @@ size_t Transaction::MakeCheckpoint() {
 /// @param checkpoint_id the checkpoint id to go back to
 void Transaction::ApplyCheckpoint(size_t checkpoint_id) {
     if (evm_type == EVMType::BASIC) {
-        vm.emplace<evmone::VM>();
+        auto& _vm = std::get<evmone::VM>(vm);
+        if (_vm.state == std::nullopt) { CHECK(false) << "fuck you"; }
+        auto& host_interface = host.get_interface();
+        auto  host_context   = host.to_context();
+        _vm.state.value()->reset(
+            message, EVMC_SHANGHAI, 
+            host_interface, host_context,
+            std::basic_string_view{&code[0], code.size()}, 
+            std::basic_string_view{&input[0], input.size()}
+        );
         return;
     }
     if (evm_type == EVMType::STRAWMAN) {
