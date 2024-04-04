@@ -12,6 +12,7 @@
 #include <stdexcept>
 #include <variant>
 #include <vector>
+#include <unordered_set>
 
 namespace spectrum {
 
@@ -45,6 +46,8 @@ class Transaction {
     std::span<uint8_t> code;
     std::vector<uint8_t> input;
     evmc_message message;
+    std::unordered_set<size_t> read_set;
+    std::unordered_set<size_t> write_set;
     
 
     public:
@@ -52,6 +55,10 @@ class Transaction {
                 std::span<uint8_t> code, std::span<uint8_t> input);
     void InstallSetStorageHandler(spectrum::SetStorage &&handler);
     void InstallGetStorageHandler(spectrum::GetStorage &&handler);
+    std::unordered_set<size_t> GetReadSet();
+    std::unordered_set<size_t> GetWriteSet();
+    void SetReadSet(std::unordered_set<size_t> read_set);
+    void SetWriteSet(std::unordered_set<size_t> write_set);
     void Analyze(Prediction& prediction);
     void Execute();
     void Break();

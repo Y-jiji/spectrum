@@ -28,6 +28,7 @@ if __name__ == '__main__':
                 f"Aria:{num_threads}:{table_partitions}:{batch_size // num_threads}:TRUE",
                 f"Sparkle:{num_threads}:{table_partitions}", 
                 f"Spectrum:{num_threads}:{table_partitions}:COPYONWRITE",
+                f"SpectrumPreSched:{num_threads}:{table_partitions}:COPYONWRITE",
                 # f"SpectrumSched:{num_threads}:{table_partitions}:COPYONWRITE",
                 # f"Dummy:{num_threads}:{table_partitions}:COPYONWRITE",
                 # f"Serial:BASIC:{1}",

@@ -34,16 +34,23 @@ inline std::string to_string(uint32_t key) {
 
 Transaction YCSB::Next() {
     DLOG(INFO) << "ycsb next" << std::endl;
+    auto read_set = std::unordered_set<size_t>();
+    auto write_set = std::unordered_set<size_t>();
     auto input = spectrum::from_hex([&]() {
         //  10 key 5 read 5 write(may be blind)
         auto s = std::string{"f3d7af72"};
         auto v = std::vector<size_t>(11, 0);
+        for (auto i = 0; i < 5; i++) { read_set.insert(v[i]);}
+        for (auto i = 5; i < 10; i++) { write_set.insert(v[i]); }
         SampleUniqueN(*rng, v);
         for (int i = 0; i <= 10; i++) { s += to_string(v[i]); }
         return s;
     }()).value();
     #undef X
-    return Transaction(this->evm_type, evmc::address{0x1}, evmc::address{0x1}, std::span{code}, std::span{input});
+    auto tx = Transaction(this->evm_type, evmc::address{0x1}, evmc::address{0x1}, std::span{code}, std::span{input});
+    tx.SetReadSet(read_set);
+    tx.SetWriteSet(write_set);
+    return tx;
 }
 
 } // namespace spectrum

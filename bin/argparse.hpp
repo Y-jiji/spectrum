@@ -7,6 +7,7 @@
 #include <spectrum/protocol/dummy.hpp>
 #include <spectrum/protocol/spectrum-sched.hpp>
 #include <spectrum/protocol/spectrum-cache.hpp>
+#include <spectrum/protocol/spectrum-presched.hpp>
 #include <spectrum/workload/abstraction.hpp>
 #include <spectrum/workload/smallbank.hpp>
 #include <spectrum/workload/ycsb.hpp>
@@ -111,6 +112,7 @@ inline std::unique_ptr<Protocol> ParseProtocol(const char* arg, Workload& worklo
     OPT(Spectrum,       INT, INT, EVMTYPE)
     OPT(SpectrumSched,  INT, INT, EVMTYPE)
     OPT(SpectrumCache,  INT, INT, EVMTYPE)
+    OPT(SpectrumPreSched,  INT, INT, EVMTYPE)
     OPT(Serial,         EVMTYPE,  INT)
     OPT(Calvin,         INT, INT, INT)
     OPT(Dummy,          INT, INT, EVMTYPE)

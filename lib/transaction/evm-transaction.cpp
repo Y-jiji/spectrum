@@ -71,6 +71,22 @@ void Transaction::InstallGetStorageHandler(spectrum::GetStorage&& handler) {
     host.get_storage_inner = handler;
 }
 
+void Transaction::SetReadSet(std::unordered_set<size_t> read_set){
+    this->read_set = read_set;
+}
+
+void Transaction::SetWriteSet(std::unordered_set<size_t> write_set){
+    this->write_set = write_set;
+}
+
+std::unordered_set<size_t> Transaction::GetReadSet(){
+    return read_set;
+}
+
+std::unordered_set<size_t> Transaction::GetWriteSet(){
+    return write_set;
+}
+
 /// @brief making checkpoint
 /// @return checkpoint id, see Transaction::ApplyCheckpoint
 size_t Transaction::MakeCheckpoint() {
